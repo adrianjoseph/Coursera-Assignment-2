@@ -1,51 +1,47 @@
 ## The combination of these functions are meant to find the inverse of a 
-## matrix argument and cache the results in temporary memory such that 
-## the results can be called without using main memory
+## matrix-argument and cache the respective results in temporary memory 
+## in order to avoid repeatedly calculating the inverse of the matrix
 
 
-## The makeCacheMatrix() function takes a matrix argument and defines the actions of 4 
-## functions, which either make its argument accessible, via a getarg() function, 
-## globally assigns the argument of the setmatrix() function and finally allows the 
-## getmatrix() function to return the available inverse matrix object,
-## all via a list argument call from another funtion
+## The makeCacheMatrix() function takes a matrix-argument and creates a list
+## of function arguments which all serve to cache the results of the matrix's inverse
+## which is determined by another function call from cacheSolve()
+
 makeCacheMatrix <- function(x = matrix()) {
-    matrixobj<-NULL#creates a globally accessible object with no content
+    invmatrixobj<-NULL
     stage<-function(y){
-        x<<-y#uses the super assignment function to make the 'stage' function argument
-        #accessible to all functions in makeCacheMatrix
-        matrixobj<<-NULL
+        x<<-y
+        invmatrixobj<<-NULL
     }
     getarg<-function(){
         x
     }
     setmatrix<-function(argsolve){
-        matrixobj<<-argsolve#gets its argument from cachesolve call to solve(ans)
+        invmatrixobj<<-argsolve#gets its argument from cachesolve call to solve(ans)
     } 
-    getmatrix<-function(){
-        matrixobj#this object is being sourced from the output from the setmatrix() 
+    getinvmatrix<-function(){
+        invmatrixobj#this object is being sourced from the output from the setmatrix() 
         #function as a result of the golbal assignment
     }
-    list(stg=stage,arg=getarg,setma=setmatrix,getma=getmatrix)#creates a list of functions
-    #which can be called
+    list(stage=stage,getarg=getarg,setmatrix=setmatrix,getinvmatrix=getinvmatrix)#creates a list of functions
+    #which can be called. Note the list names and the function names must match
 }
 
 
-## The cacheSolve() funtion assigns the matrix currently available in the getmatrix()
-## function call and checks to see if the object is null or not. If the object is not 
-## null it returns the results. If the matrix object from the getmatrix() function call
-## is not null, it calculates the inverse of the matrix provided in the makeCacheMatrix()
-## function, and stores the results within the makeCacheMatrix() function via the
-## setmatrix() function
+## The cacheSolve() funtion assigns a matrix and checks to see if the object is avaiable or not. 
+## If the object is available it returns the cached results. If the matrix object is not, it 
+## calculates the inverse of the matrix provided in the makeCacheMatrix()
+
 cacheSolve <- function(x, ...) {
     ## Return a matrix that is the inverse of 'x'
-    matrixobj<-x$getma()#calls the getmatrix() function within the makeCacheMatrix() function
-    if(!is.null(matrixobj)){#checks to see if anything is cached
+    invmatrixobj<-x$getinvmatrix()#calls the getinvmatrix() function within the makeCacheMatrix() function
+    if(!is.null(invmatrixobj)){#checks to see if anything is cached/available already
         message("pulling cached data")
-        return(matrixobj)
+        return(invmatrixobj)
     }
     message("calculating...")
-    ans<-x$arg()#calls the getarg() function within the makeCacheMatrix() function
-    matrixobj<-solve(ans)
-    x$setma(matrixobj)#calls the setmatrix() function within the makeCacheMatrix() function
-    matrixobj
+    ans<-x$getarg()#calls the getarg() function within the makeCacheMatrix() function
+    invmatrixobj<-solve(ans)
+    x$setmatrix(invmatrixobj)#calls the setmatrix() function within the makeCacheMatrix() function
+    invmatrixobj
 }
